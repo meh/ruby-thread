@@ -6,6 +6,7 @@ Gem::Specification.new {|s|
 	s.homepage     = 'http://github.com/meh/ruby-thread'
 	s.platform     = Gem::Platform::RUBY
 	s.summary      = 'Various extensions to the base thread stdlib.'
+	s.description  = 'Includes a thread pool, message passing capabilities and a recursive mutex.'
 
 	s.files         = `git ls-files`.split("\n")
 	s.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
