@@ -39,10 +39,10 @@ class Thread::Pool
 
 			begin
 				@block.call(*@arguments)
-			rescue Exception => e
-				if e.is_a? Timeout
+			rescue Exception => reason
+				if reason.is_a? Timeout
 					@timedout = true
-				elsif e.is_a? Asked
+				elsif reason.is_a? Asked
 					return
 				else
 					@exception = reason
