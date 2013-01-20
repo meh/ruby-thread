@@ -14,7 +14,7 @@ Example
 -------
 
 ```ruby
-require 'ruby-thread/pool'
+require 'thread/pool'
 
 pool = Thread::Pool.new(4)
 
@@ -39,7 +39,7 @@ Example
 -------
 
 ```ruby
-require 'ruby-thread/channel'
+require 'thread/channel'
 
 channel = Thread::Channel.new
 channel.send 'wat'
