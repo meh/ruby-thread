@@ -18,9 +18,13 @@ class Thread::Pool
 		attr_reader :pool, :timeout, :exception, :thread, :started_at
 
 		def initialize (pool, *args, &block)
-			@pool      = pool
-			@arguments = args
-			@block     = block
+			@pool       = pool
+			@arguments  = args
+			@block      = block
+			@running    = false
+			@finished   = false
+			@timedout   = false
+			@terminated = false
 		end
 
 		def running?;    @running;   end
@@ -221,7 +225,7 @@ class Thread::Pool
 	end
 
 	def wake_up_timeout
-		if @pipes
+		if defined? @pipes
 			@pipes.last.write_nonblock 'x' rescue nil
 		end
 	end
