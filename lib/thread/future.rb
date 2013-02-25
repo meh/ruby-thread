@@ -12,8 +12,6 @@ require 'thread/promise'
 
 class Thread::Future
 	def initialize (&block)
-		@exception = false
-
 		Thread.new {
 			begin
 				deliver block.call
@@ -26,7 +24,7 @@ class Thread::Future
 	end
 
 	def exception?
-		!!@exception
+		instance_variable_defined? :@exception
 	end
 
 	def exception
