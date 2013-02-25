@@ -15,6 +15,8 @@ class Thread::Promise
 		instance_variable_defined? :@value
 	end
 
+	alias realized? delivered?
+
 	def deliver (value)
 		return if delivered?
 
