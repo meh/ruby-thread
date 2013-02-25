@@ -10,34 +10,48 @@
 
 require 'thread/promise'
 
-class Thread::Future < Thread::Promise
+class Thread::Future
 	def initialize (&block)
 		@exception = false
 
 		Thread.new {
-			deliver begin
-				block.call
+			begin
+				deliver block.call
 			rescue Exception => e
 				@exception = e
+
+				deliver nil
 			end
 		}
 	end
 
 	def exception?
-		@exception
+		!!@exception
 	end
 
 	def exception
 		@exception
 	end
 
+	def delivered?
+		instance_variable_defined? :@value
+	end
+
+	alias realized? delivered?
+
 	def value
-		value = super
+		raise @exception if exception?
+
+		return @value if delivered?
+
+		mutex.synchronize {
+			cond.wait(mutex)
+		}
 
 		if exception?
 			raise @exception
 		else
-			value
+			@value
 		end
 	end
 
@@ -52,6 +66,33 @@ class Thread::Future < Thread::Promise
 	end
 
 	alias ! value!
+
+private
+	def deliver (value)
+		return if delivered?
+
+		@value = value
+
+		if cond?
+			mutex.synchronize {
+				cond.broadcast
+			}
+		end
+
+		self
+	end
+
+	def cond?
+		instance_variable_defined? :@cond
+	end
+
+	def cond
+		@cond ||= ConditionVariable.new
+	end
+
+	def mutex
+		@mutex ||= Mutex.new
+	end
 end
 
 module Kernel
