@@ -10,13 +10,22 @@
 
 require 'thread'
 
+# A pool is a container of a limited amount of threads to which you can add
+# tasks to run.
+#
+# This is usually more performant and less memory intensive than creating a
+# new thread for every task.
 class Thread::Pool
+	# A task incapsulates a block being ran by the pool and the arguments to pass
+	# to it.
 	class Task
 		Timeout = Class.new(Exception)
 		Asked   = Class.new(Exception)
 
 		attr_reader :pool, :timeout, :exception, :thread, :started_at
 
+		# Create a task in the given pool which will pass the arguments to the
+		# block.
 		def initialize (pool, *args, &block)
 			@pool      = pool
 			@arguments = args
@@ -33,6 +42,7 @@ class Thread::Pool
 		def timeout?;    @timedout;   end
 		def terminated?; @terminated; end
 
+		# Execute the task in the given thread.
 		def execute (thread)
 			return if terminated? || running? || finished?
 
@@ -59,6 +69,7 @@ class Thread::Pool
 			@thread   = nil
 		end
 
+		# Terminate the exception with an optionally given exception.
 		def terminate! (exception = Asked)
 			return if terminated? || finished? || timeout?
 
@@ -69,10 +80,12 @@ class Thread::Pool
 			@thread.raise exception
 		end
 
+		# Force the task to timeout.
 		def timeout!
 			terminate! Timeout
 		end
 
+		# Timeout the task after the given time.
 		def timeout_after (time)
 			@timeout = time
 
@@ -84,6 +97,13 @@ class Thread::Pool
 
 	attr_reader :min, :max, :spawned
 
+	# Create the pool with minimum and maximum threads.
+	#
+	# The pool will start with the minimum amount of threads created and will
+	# spawn new threads until the max is reached in case of need.
+	#
+	# A default block can be passed, which will be used to {#process} the passed
+	# data.
 	def initialize (min, max = nil, &block)
 		@min   = min
 		@max   = max || min
@@ -109,12 +129,26 @@ class Thread::Pool
 		}
 	end
 
+	# Check if the pool has been shut down.
 	def shutdown?; !!@shutdown; end
 
-	def auto_trim?;    @auto_trim;         end
-	def auto_trim!;    @auto_trim = true;  end
-	def no_auto_trim!; @auto_trim = false; end
+	# Check if auto trimming is enabled.
+	def auto_trim?
+		@auto_trim
+	end
 
+	# Enable auto trimming, unneeded threads will be deleted until the minimum
+	# is reached.
+	def auto_trim!
+		@auto_trim = true
+	end
+
+	# Disable auto trimming.
+	def no_auto_trim!
+		@auto_trim = false
+	end
+
+	# Resize the pool with the passed arguments.
 	def resize (min, max = nil)
 		@min = min
 		@max = max || min
@@ -122,12 +156,18 @@ class Thread::Pool
 		trim!
 	end
 
+	# Get the amount of tasks that still have to be run.
 	def backlog
 		@mutex.synchronize {
 			@todo.length
 		}
 	end
 
+	# Add a task to the pool which will execute the block with the given
+	# argument.
+	#
+	# If no block is passed the default block will be used if present, an
+	# ArgumentError will be raised otherwise.
 	def process (*args, &block)
 		unless block || @block
 			raise ArgumentError, 'you must pass a block'
@@ -152,6 +192,8 @@ class Thread::Pool
 
 	alias << process
 
+	# Trim the unused threads, if forced threads will be trimmed even if there
+	# are tasks waiting.
 	def trim (force = false)
 		@mutex.synchronize {
 			if (force || @waiting > 0) && @spawned - @trim_requests > @min
@@ -163,10 +205,12 @@ class Thread::Pool
 		self
 	end
 
+	# Force #{trim}.
 	def trim!
 		trim true
 	end
 
+	# Shut down the pool instantly without finishing to execute tasks.
 	def shutdown!
 		@mutex.synchronize {
 			@shutdown = :now
@@ -178,6 +222,7 @@ class Thread::Pool
 		self
 	end
 
+	# Shut down the pool, it will block until all tasks have finished running.
 	def shutdown
 		@mutex.synchronize {
 			@shutdown = :nicely
@@ -197,12 +242,14 @@ class Thread::Pool
 		self
 	end
 
+	# Join on all threads in the pool.
 	def join
 		@workers.first.join until @workers.empty?
 
 		self
 	end
 
+	# Define a timeout for a task.
 	def timeout_for (task, timeout)
 		unless @timeout
 			spawn_timeout_thread
@@ -215,6 +262,7 @@ class Thread::Pool
 		}
 	end
 
+	# Shutdown the pool after a given amount of time.
 	def shutdown_after (timeout)
 		Thread.new {
 			sleep timeout

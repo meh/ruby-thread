@@ -10,7 +10,12 @@
 
 require 'thread'
 
+# A channel lets you send and receive various messages in a thread-safe way.
+#
+# It also allows for guards upon sending and retrieval, to ensure the passed
+# messages are safe to be consumed.
 class Thread::Channel
+	# Create a channel with optional initial messages and optional channel guard.
 	def initialize (messages = [], &block)
 		@messages = []
 		@mutex    = Mutex.new
@@ -22,6 +27,10 @@ class Thread::Channel
 		}
 	end
 
+	# Send a message to the channel.
+	#
+	# If there's a guard, the value is passed to it, if the guard returns a falsy value
+	# an ArgumentError exception is raised and the message is not sent.
 	def send (what)
 		if @check && !@check.call(what)
 			raise ArgumentError, 'guard mismatch'
@@ -35,6 +44,9 @@ class Thread::Channel
 		self
 	end
 
+	# Receive a message, if there are none the call blocks until there's one.
+	#
+	# If a block is passed, it's used as guard to match to a message.
 	def receive (&block)
 		message = nil
 
@@ -64,6 +76,9 @@ class Thread::Channel
 		message
 	end
 
+	# Receive a message, if there are none the call returns nil.
+	#
+	# If a block is passed, it's used as guard to match to a message.
 	def receive! (&block)
 		if block
 			@messages.delete_at(@messages.find_index(&block))

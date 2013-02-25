@@ -10,6 +10,9 @@
 
 require 'thread/promise'
 
+# A future is an object that incapsulates a block which is called in a
+# different thread, upon retrieval the caller gets blocked until the block has
+# finished running, and its result is returned and cached.
 class Thread::Future
 	def initialize (&block)
 		Thread.new {
@@ -23,20 +26,27 @@ class Thread::Future
 		}
 	end
 
+	# Check if an exception has been raised.
 	def exception?
 		instance_variable_defined? :@exception
 	end
 
+	# Return the raised exception.
 	def exception
 		@exception
 	end
 
+	# Check if the future has been called.
 	def delivered?
 		instance_variable_defined? :@value
 	end
 
 	alias realized? delivered?
 
+	# Get the value of the future, if it's not finished running this call will block.
+	#
+	# In case the block raises an exception, it will be raised, the exception is cached
+	# and will be raised every time you access the value.
 	def value
 		raise @exception if exception?
 
@@ -55,6 +65,7 @@ class Thread::Future
 
 	alias ~ value
 
+	# Do the same as {#value}, but return nil in case of exception.
 	def value!
 		begin
 			value

@@ -10,6 +10,10 @@
 
 require 'thread'
 
+# A recursive mutex lets you lock in various threads recursively, allowing
+# you to do multiple locks one inside another.
+#
+# You really shouldn't use this, but in some cases it makes your life easier.
 class RecursiveMutex < Mutex
 	def initialize
 		@threads = Hash.new { |h, k| h[k] = 0 }
@@ -17,6 +21,7 @@ class RecursiveMutex < Mutex
 		super
 	end
 
+	# Lock the mutex.
 	def lock
 		@thread[Thread.current] += 1
 
@@ -25,6 +30,7 @@ class RecursiveMutex < Mutex
 		end
 	end
 
+	# Unlock the mutex.
 	def unlock
 		@thread[Thread.current] -= 1
 

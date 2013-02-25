@@ -10,13 +10,16 @@
 
 require 'thread'
 
+# A promise is an object that lets you wait for a value to be delivered to it.
 class Thread::Promise
+	# Check if a value has been delivered.
 	def delivered?
 		instance_variable_defined? :@value
 	end
 
 	alias realized? delivered?
 
+	# Deliver a value.
 	def deliver (value)
 		return if delivered?
 
@@ -33,6 +36,8 @@ class Thread::Promise
 
 	alias << deliver
 
+	# Get the value that's been delivered, if none has been delivered yet the call
+	# will block until one is delivered.
 	def value
 		return @value if delivered?
 

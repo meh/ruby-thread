@@ -1,5 +1,5 @@
-thread - various extensions to the thread stdlib
-================================================
+thread - various extensions to the thread library
+=================================================
 
 Pool
 ====
