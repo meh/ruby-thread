@@ -12,10 +12,46 @@ require 'thread/promise'
 
 class Thread::Future < Thread::Promise
 	def initialize (&block)
+		@exception = false
+
 		Thread.new {
-			deliver block.call
+			deliver begin
+				block.call
+			rescue Exception => e
+				@exception = e
+			end
 		}
 	end
+
+	def exception?
+		@exception
+	end
+
+	def exception
+		@exception
+	end
+
+	def value
+		value = super
+
+		if exception?
+			raise @exception
+		else
+			value
+		end
+	end
+
+	alias ~ value
+
+	def value!
+		begin
+			value
+		rescue Exception
+			nil
+		end
+	end
+
+	alias ! value!
 end
 
 module Kernel
