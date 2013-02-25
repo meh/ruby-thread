@@ -18,9 +18,10 @@ class Thread::Pool
 		attr_reader :pool, :timeout, :exception, :thread, :started_at
 
 		def initialize (pool, *args, &block)
-			@pool       = pool
-			@arguments  = args
-			@block      = block
+			@pool      = pool
+			@arguments = args
+			@block     = block
+
 			@running    = false
 			@finished   = false
 			@timedout   = false
@@ -39,7 +40,7 @@ class Thread::Pool
 			@running    = true
 			@started_at = Time.now
 
-			pool.wake_up_timeout
+			pool.__send__.wake_up_timeout
 
 			begin
 				@block.call(*@arguments)
@@ -224,13 +225,13 @@ class Thread::Pool
 		self
 	end
 
+private
 	def wake_up_timeout
 		if defined? @pipes
 			@pipes.last.write_nonblock 'x' rescue nil
 		end
 	end
 
-private
 	def spawn_thread
 		@spawned += 1
 
@@ -281,7 +282,7 @@ private
 		@timeout = Thread.new {
 			loop do
 				now     = Time.now
-				timeout = @timeouts.map {|task, timeout|
+				timeout = @timeouts.map {|task, time|
 					next unless task.started_at
 
 					now - task.started_at + task.timeout
