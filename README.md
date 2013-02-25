@@ -108,3 +108,19 @@ puts ~future {
   42
 } # => 42
 ```
+
+Delay
+=====
+A delay is kind of a promise, except the block is called when the value is
+being accessed and the result is cached.
+
+Example
+-------
+
+```ruby
+require 'thread/delay'
+
+puts ~delay {
+  42
+}
+```
