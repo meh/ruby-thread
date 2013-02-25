@@ -40,7 +40,7 @@ class Thread::Promise
 			cond.wait(mutex)
 		}
 
-		return @value
+		@value
 	end
 
 	alias ~ value
