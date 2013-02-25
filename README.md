@@ -66,3 +66,45 @@ loop {
   sleep 0.5
 }
 ```
+
+Promise
+=======
+This implements the promise pattern, allowing you to pass around an object
+where you can send a value and extract a value, in a thread-safe way, accessing
+the value will wait for the value to be delivered.
+
+Example
+-------
+
+```ruby
+require 'thread/promise'
+
+p = promise
+
+Thread.new {
+  sleep 5
+  p << 42
+}
+
+puts ~p # => 42
+```
+
+Future
+======
+A future is somewhat a promise, except you pass it a block to execute in
+another thread.
+
+The value returned by the block will be the value of the promise.
+
+Example
+-------
+
+```ruby
+require 'thread/future'
+
+puts ~future {
+  sleep 5
+
+  42
+} # => 42
+```
