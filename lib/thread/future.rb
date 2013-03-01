@@ -16,6 +16,7 @@ require 'thread'
 class Thread::Future
 	Cancel = Class.new(Exception)
 
+	# Create a future with the passed block.
 	def initialize (&block)
 		@mutex = Mutex.new
 		@cond  = ConditionVariable.new
