@@ -1,6 +1,6 @@
 Gem::Specification.new {|s|
 	s.name         = 'thread'
-	s.version      = '0.0.3'
+	s.version      = '0.0.4'
 	s.author       = 'meh.'
 	s.email        = 'meh@schizofreni.co'
 	s.homepage     = 'http://github.com/meh/ruby-thread'
