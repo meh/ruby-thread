@@ -50,7 +50,7 @@ class Thread::Pool
 			@running    = true
 			@started_at = Time.now
 
-			pool.__send__.wake_up_timeout
+			pool.__send__ :wake_up_timeout
 
 			begin
 				@block.call(*@arguments)
