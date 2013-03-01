@@ -11,6 +11,7 @@
 # A delay is an object that incapsulates a block which is called upon
 # value retrieval, and its result cached.
 class Thread::Delay
+	# Create a delay with the passed block.
 	def initialize (&block)
 		@mutex = Mutex.new
 
