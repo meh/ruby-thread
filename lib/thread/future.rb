@@ -77,6 +77,9 @@ class Thread::Future
 	#
 	# In case the block raises an exception, it will be raised, the exception is cached
 	# and will be raised every time you access the value.
+	#
+	# An optional timeout can be passed which will return nil if nothing has been
+	# delivered.
 	def value (timeout = nil)
 		raise @exception if exception?
 

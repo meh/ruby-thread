@@ -43,6 +43,9 @@ class Thread::Promise
 
 	# Get the value that's been delivered, if none has been delivered yet the call
 	# will block until one is delivered.
+	#
+	# An optional timeout can be passed which will return nil if nothing has been
+	# delivered.
 	def value (timeout = nil)
 		return @value if delivered?
 
