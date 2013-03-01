@@ -12,22 +12,30 @@
 # value retrieval, and its result cached.
 class Thread::Delay
 	def initialize (&block)
+		@mutex = Mutex.new
+
 		@block = block
 	end
 
 	# Check if an exception has been raised.
 	def exception?
-		instance_variable_defined? :@exception
+		@mutex.synchronize {
+			instance_variable_defined? :@exception
+		}
 	end
 
 	# Return the raised exception.
 	def exception
-		@exception
+		@mutex.synchronize {
+			@exception
+		}
 	end
 
 	# Check if the delay has been called.
 	def delivered?
-		instance_variable_defined? :@value
+		@mutex.synchronize {
+			instance_variable_defined? :@value
+		}
 	end
 
 	alias realized? delivered?
@@ -42,13 +50,15 @@ class Thread::Delay
 
 		return @value if realized?
 
-		begin
-			@value = @block.call
-		rescue Exception => e
-			@exception = e
+		@mutex.synchronize {
+			begin
+				@value = @block.call
+			rescue Exception => e
+				@exception = e
 
-			raise
-		end
+				raise
+			end
+		}
 	end
 
 	alias ~ value
