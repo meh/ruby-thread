@@ -8,14 +8,19 @@
 #  0. You just DO WHAT THE FUCK YOU WANT TO.
 #++
 
-require 'thread/promise'
+require 'thread'
 
 # A future is an object that incapsulates a block which is called in a
 # different thread, upon retrieval the caller gets blocked until the block has
 # finished running, and its result is returned and cached.
 class Thread::Future
+	Cancel = Class.new(Exception)
+
 	def initialize (&block)
-		Thread.new {
+		@mutex = Mutex.new
+		@cond  = ConditionVariable.new
+
+		@thread = Thread.new {
 			begin
 				deliver block.call
 			rescue Exception => e
@@ -28,47 +33,69 @@ class Thread::Future
 
 	# Check if an exception has been raised.
 	def exception?
-		instance_variable_defined? :@exception
+		@mutex.synchronize {
+			instance_variable_defined? :@exception
+		}
 	end
 
 	# Return the raised exception.
 	def exception
-		@exception
+		@mutex.synchronize {
+			@exception
+		}
 	end
 
 	# Check if the future has been called.
 	def delivered?
-		instance_variable_defined? :@value
+		@mutex.synchronize {
+			instance_variable_defined? :@value
+		}
 	end
 
 	alias realized? delivered?
+
+	# Cancel the future, {#value} will yield a Cancel exception
+	def cancel
+		return if delivered?
+
+		@mutex.synchronize {
+			@thread.raise Cancel.new('future cancelled')
+		}
+	end
+
+	# Check if the future has been cancelled
+	def cancelled?
+		@mutex.synchronize {
+			@exception.is_a? Cancel
+		}
+	end
 
 	# Get the value of the future, if it's not finished running this call will block.
 	#
 	# In case the block raises an exception, it will be raised, the exception is cached
 	# and will be raised every time you access the value.
-	def value
+	def value (timeout = nil)
 		raise @exception if exception?
 
 		return @value if delivered?
 
-		mutex.synchronize {
-			cond.wait(mutex)
+		@mutex.synchronize {
+			@cond.wait(@mutex, *timeout)
 		}
 
 		if exception?
 			raise @exception
-		else
-			@value
+		elsif delivered?
+			return @value
 		end
 	end
 
 	alias ~ value
 
 	# Do the same as {#value}, but return nil in case of exception.
-	def value!
+	def value! (timeout = nil)
 		begin
-			value
+			value(timeout)
 		rescue Exception
 			nil
 		end
@@ -80,27 +107,12 @@ private
 	def deliver (value)
 		return if delivered?
 
-		@value = value
-
-		if cond?
-			mutex.synchronize {
-				cond.broadcast
-			}
-		end
+		@mutex.synchronize {
+			@value = value
+			@cond.broadcast
+		}
 
 		self
-	end
-
-	def cond?
-		instance_variable_defined? :@cond
-	end
-
-	def cond
-		@cond ||= ConditionVariable.new
-	end
-
-	def mutex
-		@mutex ||= Mutex.new
 	end
 end
 
