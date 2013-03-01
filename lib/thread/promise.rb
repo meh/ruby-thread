@@ -12,9 +12,16 @@ require 'thread'
 
 # A promise is an object that lets you wait for a value to be delivered to it.
 class Thread::Promise
+	def initialize
+		@mutex = Mutex.new
+		@cond  = ConditionVariable.new
+	end
+
 	# Check if a value has been delivered.
 	def delivered?
-		instance_variable_defined? :@value
+		@mutex.synchronize {
+			instance_variable_defined? :@value
+		}
 	end
 
 	alias realized? delivered?
@@ -23,13 +30,10 @@ class Thread::Promise
 	def deliver (value)
 		return if delivered?
 
-		@value = value
-
-		if cond?
-			mutex.synchronize {
-				cond.broadcast
-			}
-		end
+		@mutex.synchronize {
+			@value = value
+			@cond.broadcast
+		}
 
 		self
 	end
@@ -38,30 +42,17 @@ class Thread::Promise
 
 	# Get the value that's been delivered, if none has been delivered yet the call
 	# will block until one is delivered.
-	def value
+	def value (timeout = nil)
 		return @value if delivered?
 
-		mutex.synchronize {
-			cond.wait(mutex)
+		@mutex.synchronize {
+			@cond.wait(@mutex, *timeout)
 		}
 
-		@value
+		return @value if delivered?
 	end
 
 	alias ~ value
-
-private
-	def cond?
-		instance_variable_defined? :@cond
-	end
-
-	def cond
-		@cond ||= ConditionVariable.new
-	end
-
-	def mutex
-		@mutex ||= Mutex.new
-	end
 end
 
 module Kernel
