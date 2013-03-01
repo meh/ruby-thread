@@ -12,6 +12,7 @@ require 'thread'
 
 # A promise is an object that lets you wait for a value to be delivered to it.
 class Thread::Promise
+	# Create a promise.
 	def initialize
 		@mutex = Mutex.new
 		@cond  = ConditionVariable.new
