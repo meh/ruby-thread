@@ -13,6 +13,8 @@
 class Thread::Delay
 	# Create a delay with the passed block.
 	def initialize (&block)
+		raise ArgumentError, 'no block given' unless block
+
 		@mutex = Mutex.new
 
 		@block = block
