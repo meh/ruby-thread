@@ -18,6 +18,8 @@ class Thread::Future
 
 	# Create a future with the passed block.
 	def initialize (&block)
+		raise ArgumentError, 'no block given' unless block
+
 		@mutex = Mutex.new
 		@cond  = ConditionVariable.new
 
