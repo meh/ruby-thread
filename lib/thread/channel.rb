@@ -19,7 +19,6 @@ class Thread::Channel
 	def initialize (messages = [], &block)
 		@messages = []
 		@mutex    = Mutex.new
-		@cond     = ConditionVariable.new
 		@check    = block
 
 		messages.each {|o|
@@ -38,7 +37,8 @@ class Thread::Channel
 
 		@mutex.synchronize {
 			@messages << what
-			@cond.broadcast
+
+			cond.broadcast if cond?
 		}
 
 		self
@@ -59,14 +59,14 @@ class Thread::Channel
 						message = @messages.delete_at(index)
 						found   = true
 					else
-						@cond.wait @mutex
+						cond.wait @mutex
 					end
 				}
 			end
 		else
 			@mutex.synchronize {
 				if @messages.empty?
-					@cond.wait @mutex
+					cond.wait @mutex
 				end
 
 				message = @messages.shift
@@ -85,5 +85,14 @@ class Thread::Channel
 		else
 			@messages.shift
 		end
+	end
+
+private
+	def cond?
+		instance_variable_defined? :@cond
+	end
+
+	def cond
+		@cond ||= ConditionVariable.new
 	end
 end
