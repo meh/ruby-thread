@@ -20,9 +20,7 @@ class Thread::Future
 	def initialize (&block)
 		raise ArgumentError, 'no block given' unless block
 
-		@mutex = Mutex.new
-		@cond  = ConditionVariable.new
-
+		@mutex  = Mutex.new
 		@thread = Thread.new {
 			begin
 				deliver block.call
@@ -86,7 +84,7 @@ class Thread::Future
 		return @value if delivered?
 
 		@mutex.synchronize {
-			@cond.wait(@mutex, *timeout)
+			cond.wait(@mutex, *timeout)
 		}
 
 		if exception?
@@ -110,12 +108,21 @@ class Thread::Future
 	alias ! value!
 
 private
+	def cond?
+		instance_variable_defined? :@cond
+	end
+
+	def cond
+		@cond ||= ConditionVariable.new
+	end
+
 	def deliver (value)
 		return if delivered?
 
 		@mutex.synchronize {
 			@value = value
-			@cond.broadcast
+
+			cond.broadcast if cond?
 		}
 
 		self
