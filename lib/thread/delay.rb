@@ -16,7 +16,6 @@ class Thread::Delay
 		raise ArgumentError, 'no block given' unless block
 
 		@mutex = Mutex.new
-
 		@block = block
 	end
 
