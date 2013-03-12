@@ -15,7 +15,6 @@ class Thread::Promise
 	# Create a promise.
 	def initialize
 		@mutex = Mutex.new
-		@cond  = ConditionVariable.new
 	end
 
 	# Check if a value has been delivered.
@@ -33,7 +32,8 @@ class Thread::Promise
 
 		@mutex.synchronize {
 			@value = value
-			@cond.broadcast
+
+			cond.broadcast if cond?
 		}
 
 		self
@@ -50,13 +50,22 @@ class Thread::Promise
 		return @value if delivered?
 
 		@mutex.synchronize {
-			@cond.wait(@mutex, *timeout)
+			cond.wait(@mutex, *timeout)
 		}
 
 		return @value if delivered?
 	end
 
 	alias ~ value
+
+private
+	def cond?
+		instance_variable_defined? :@cond
+	end
+
+	def cond
+		@cond ||= ConditionVariable.new
+	end
 end
 
 module Kernel
