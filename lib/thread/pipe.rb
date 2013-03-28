@@ -89,3 +89,10 @@ class Thread::Pipe
 	alias deq pop
 	alias ~   pop
 end
+
+class Thread
+	# Helper to create a pipe.
+	def self.| (func)
+		Pipe.new | func
+	end
+end

@@ -79,11 +79,10 @@ Example
 ```ruby
 require 'thread/pipe'
 
-p = Thread::Pipe.new \
-	|-> d { d * 2 } |-> d { d * 4 }
-
+p = Thread |-> d { d * 2 } |-> d { d * 4 }
 p << 2
-puts ~p
+
+puts ~p # => 16
 ```
 
 Promise
