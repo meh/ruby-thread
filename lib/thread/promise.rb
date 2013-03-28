@@ -68,7 +68,15 @@ private
 	end
 end
 
+class Thread
+	# Helper method to create a promise.
+	def self.promise
+		Thread::Promise.new
+	end
+end
+
 module Kernel
+	# Helper method to create a promise.
 	def promise
 		Thread::Promise.new
 	end

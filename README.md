@@ -97,7 +97,7 @@ Example
 ```ruby
 require 'thread/promise'
 
-p = promise
+p = Thread.promise
 
 Thread.new {
   sleep 5
