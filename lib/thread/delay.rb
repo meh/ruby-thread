@@ -8,6 +8,8 @@
 #  0. You just DO WHAT THE FUCK YOU WANT TO.
 #++
 
+require 'thread'
+
 # A delay is an object that incapsulates a block which is called upon
 # value retrieval, and its result cached.
 class Thread::Delay
