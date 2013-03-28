@@ -129,7 +129,15 @@ private
 	end
 end
 
+class Thread
+	# Helper to create a future
+	def self.future (&block)
+		Thread::Future.new(&block)
+	end
+end
+
 module Kernel
+	# Helper to create a future.
 	def future (&block)
 		Thread::Future.new(&block)
 	end

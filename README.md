@@ -120,11 +120,13 @@ Example
 ```ruby
 require 'thread/future'
 
-puts ~future {
+f = Thread.future {
   sleep 5
 
   42
-} # => 42
+}
+
+puts ~f # => 42
 ```
 
 Delay
