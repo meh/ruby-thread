@@ -41,11 +41,11 @@ Example
 ```ruby
 require 'thread/channel'
 
-channel = Thread::Channel.new
+channel = Thread.channel
 channel.send 'wat'
 channel.receive # => 'wat'
 
-channel = Thread::Channel.new { |o| o.is_a?(Integer) }
+channel = Thread.channel { |o| o.is_a?(Integer) }
 channel.send 'wat' # => ArgumentError: guard mismatch
 
 Thread.new {

@@ -96,3 +96,10 @@ private
 		@cond ||= ConditionVariable.new
 	end
 end
+
+class Thread
+	# Helper to create a channel.
+	def self.channel (*args, &block)
+		Thread::Channel.new(*args, &block)
+	end
+end
