@@ -140,7 +140,9 @@ Example
 ```ruby
 require 'thread/delay'
 
-puts ~delay {
+d = Thread.delay {
   42
 }
+
+puts ~d # => 42
 ```

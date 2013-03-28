@@ -79,6 +79,13 @@ class Thread::Delay
 	alias ! value!
 end
 
+class Thread
+	# Helper to create Thread::Delay
+	def self.delay (&block)
+		Thread::Delay.new(&block)
+	end
+end
+
 module Kernel
 	# Helper to create a Thread::Delay
 	def delay (&block)
