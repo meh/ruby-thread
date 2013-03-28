@@ -5,7 +5,7 @@ task :default => [:install, :test]
 
 task :install do
 	sh 'gem build *.gemspec'
-	sh 'gem install *.gem'
+	sh 'gem install --development *.gem'
 end
 
 task :test do
