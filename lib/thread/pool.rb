@@ -360,3 +360,10 @@ private
 		}
 	end
 end
+
+class Thread
+	# Helper to create a pool.
+	def self.pool (*args, &block)
+		Thread::Pool.new(*args, &block)
+	end
+end

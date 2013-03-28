@@ -16,7 +16,7 @@ Example
 ```ruby
 require 'thread/pool'
 
-pool = Thread::Pool.new(4)
+pool = Thread.pool(4)
 
 10.times {
   pool.process {
