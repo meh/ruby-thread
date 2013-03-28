@@ -67,6 +67,25 @@ loop {
 }
 ```
 
+Pipe
+====
+A pipe allows you to execute various tasks on a set of data in parallel,
+each datum inserted in the pipe is passed along through queues to the various
+functions composing the pipe, the final result is inserted in the final queue.
+
+Example
+-------
+
+```ruby
+require 'thread/pipe'
+
+p = Thread::Pipe.new \
+	|-> d { d * 2 } |-> d { d * 4 }
+
+p << 2
+puts ~p
+```
+
 Promise
 =======
 This implements the promise pattern, allowing you to pass around an object
