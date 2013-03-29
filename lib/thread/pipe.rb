@@ -27,14 +27,14 @@ class Thread::Pipe
 
 			@thread = Thread.new {
 				while true
-					begin
-						value = @input.deq
+					value = @input.deq
 
-						@handling = true
+					@handling = true
+					begin
 						value = func.call(value)
 						@output.enq value
-						@handling = false
 					rescue Exception; end
+					@handling = false
 				end
 			}
 		end
@@ -70,15 +70,6 @@ class Thread::Pipe
 		}
 	end
 
-	# Insert data in the pipe.
-	def << (data)
-		return if @tasks.empty?
-
-		@input.enq data
-
-		self
-	end
-
 	# Add a task to the pipe, it must respond to #call and #arity,
 	# and #arity must return 1.
 	def | (func)
@@ -99,13 +90,25 @@ class Thread::Pipe
 		@input.empty? && @output.empty? && @tasks.all?(&:empty?)
 	end
 
+	# Insert data in the pipe.
+	def enq (data)
+		return if @tasks.empty?
+
+		@input.enq data
+
+		self
+	end
+
+	alias push enq
+	alias <<   enq
+
 	# Get an element from the output queue.
-	def pop (non_block = false)
+	def deq (non_block = false)
 		@output.deq(non_block)
 	end
 	
-	alias deq pop
-	alias ~   pop
+	alias pop deq
+	alias ~   deq
 end
 
 class Thread
