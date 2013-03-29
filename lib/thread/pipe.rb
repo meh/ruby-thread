@@ -18,19 +18,26 @@ class Thread::Pipe
 		attr_accessor :input, :output
 
 		def initialize (func, input = Queue.new, output = Queue.new)
-			@input  = input
-			@output = output
+			@input    = input
+			@output   = output
+			@handling = false
 
 			@thread = Thread.new {
 				while true
 					begin
 						value = @input.deq
-						value = func.call(value)
 
+						@handling = true
+						value = func.call(value)
 						@output.enq value
+						@handling = false
 					rescue Exception; end
 				end
 			}
+		end
+
+		def empty?
+			!@handling && @input.empty? && @output.empty?
 		end
 
 		def kill
@@ -79,6 +86,11 @@ class Thread::Pipe
 		}
 
 		self
+	end
+
+	# Check if the pipe is empty.
+	def empty?
+		@input.empty? && @output.empty? && @tasks.all?(&:empty?)
 	end
 
 	# Get an element from the output queue.
