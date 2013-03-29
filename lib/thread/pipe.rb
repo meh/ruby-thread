@@ -14,9 +14,12 @@ require 'thread'
 # each datum inserted in the pipe is passed along through queues to the various
 # functions composing the pipe, the final result is inserted in the final queue.
 class Thread::Pipe
+	# A task incapsulates a part of the pipe.
 	class Task
 		attr_accessor :input, :output
 
+		# Create a Task which will call the passed function and get input
+		# from the optional parameter and put output in the optional parameter.
 		def initialize (func, input = Queue.new, output = Queue.new)
 			@input    = input
 			@output   = output
@@ -36,10 +39,12 @@ class Thread::Pipe
 			}
 		end
 
+		# Check if the task has nothing to do.
 		def empty?
 			!@handling && @input.empty? && @output.empty?
 		end
 
+		# Stop the task.
 		def kill
 			@thread.raise
 		end
@@ -58,6 +63,7 @@ class Thread::Pipe
 		ObjectSpace.define_finalizer(self, self.class.finalize(@tasks))
 	end
 
+	# @private
 	def self.finalize (tasks)
 		proc {
 			tasks.each(&:kill)
