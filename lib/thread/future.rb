@@ -16,12 +16,13 @@ require 'thread'
 class Thread::Future
 	Cancel = Class.new(Exception)
 
-	# Create a future with the passed block.
-	def initialize (&block)
+	# Create a future with the passed block and optionally using the passed pool.
+	def initialize (pool = nil, &block)
 		raise ArgumentError, 'no block given' unless block
 
-		@mutex  = Mutex.new
-		@thread = Thread.new {
+		@mutex = Mutex.new
+
+		task = proc {
 			begin
 				deliver block.call
 			rescue Exception => e
@@ -30,6 +31,8 @@ class Thread::Future
 				deliver nil
 			end
 		}
+
+		@thread = pool ? pool.process(&task) : Thread.new(&task)
 	end
 
 	# Check if an exception has been raised.
@@ -131,14 +134,14 @@ end
 
 class Thread
 	# Helper to create a future
-	def self.future (&block)
-		Thread::Future.new(&block)
+	def self.future (pool = nil, &block)
+		Thread::Future.new(pool, &block)
 	end
 end
 
 module Kernel
 	# Helper to create a future.
-	def future (&block)
-		Thread::Future.new(&block)
+	def future (pool = nil, &block)
+		Thread::Future.new(pool, &block)
 	end
 end
