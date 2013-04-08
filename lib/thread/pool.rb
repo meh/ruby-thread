@@ -69,6 +69,11 @@ class Thread::Pool
 			@thread   = nil
 		end
 
+		# Raise an exception in the thread used by the task.
+		def raise (exception)
+			@thread.raise(exception)
+		end
+
 		# Terminate the exception with an optionally given exception.
 		def terminate! (exception = Asked)
 			return if terminated? || finished? || timeout?
@@ -77,7 +82,7 @@ class Thread::Pool
 
 			return unless running?
 
-			@thread.raise exception
+			self.raise exception
 		end
 
 		# Force the task to timeout.
