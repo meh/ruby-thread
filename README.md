@@ -85,6 +85,29 @@ p << 2
 puts ~p # => 16
 ```
 
+Process
+=======
+A process helps reducing programming errors coming from race conditions and the
+like, the only way to interact with a process is through messages.
+
+Multiple processes should talk with eachother through messages.
+
+Example
+-------
+
+```ruby
+require 'thread/process'
+
+p = Thread.process {
+  loop {
+    puts receive.inspect
+  }
+}
+
+p << 42
+p << 23
+```
+
 Promise
 =======
 This implements the promise pattern, allowing you to pass around an object
