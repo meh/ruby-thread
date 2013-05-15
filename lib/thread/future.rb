@@ -33,6 +33,15 @@ class Thread::Future
 		}
 
 		@thread = pool ? pool.process(&task) : Thread.new(&task)
+
+		ObjectSpace.define_finalizer self, self.class.finalizer(@thread)
+	end
+
+	# @private
+	def self.finalizer (thread)
+		proc {
+			thread.raise Cancel.new
+		}
 	end
 
 	# Check if an exception has been raised.
