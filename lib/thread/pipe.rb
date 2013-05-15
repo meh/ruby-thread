@@ -60,11 +60,11 @@ class Thread::Pipe
 		@input  = input
 		@output = output
 
-		ObjectSpace.define_finalizer(self, self.class.finalize(@tasks))
+		ObjectSpace.define_finalizer self, self.class.finalizer(@tasks)
 	end
 
 	# @private
-	def self.finalize (tasks)
+	def self.finalizer (tasks)
 		proc {
 			tasks.each(&:kill)
 		}
