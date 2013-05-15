@@ -28,7 +28,7 @@ class Thread::Promise
 
 	# Deliver a value.
 	def deliver (value)
-		return if delivered?
+		return self if delivered?
 
 		@mutex.synchronize {
 			@value = value
