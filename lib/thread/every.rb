@@ -162,6 +162,8 @@ class Thread::Every
 
 	alias ~ value
 
+	# Gets the current every value, without blocking and waiting for the next
+	# call.
 	def value!
 		@mutex.synchronize {
 			if cond?
