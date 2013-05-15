@@ -69,11 +69,13 @@ class Thread::Future
 
 	# Cancel the future, {#value} will yield a Cancel exception
 	def cancel
-		return if delivered?
+		return self if delivered?
 
 		@mutex.synchronize {
 			@thread.raise Cancel.new('future cancelled')
 		}
+
+		self
 	end
 
 	# Check if the future has been cancelled
