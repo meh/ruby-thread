@@ -169,3 +169,27 @@ d = Thread.delay {
 
 puts ~d # => 42
 ```
+
+Every
+=====
+An every executes the block every given seconds and yields the value to the
+every object, you can then check if the current value is old or how much time
+is left until the second call is done.
+
+Example
+-------
+
+```ruby
+require 'net/http'
+require 'thread/every'
+
+e = Thread.every(5) {
+	Net::HTTP.get(URI.parse('http://www.whattimeisit.com/')).match %r{<B>(.*?)<BR>\s+(.*?)</B>}m do |m|
+		{ date: m[1], time: m[2] }
+	end
+}
+
+loop do
+	puts ~e
+end
+```
