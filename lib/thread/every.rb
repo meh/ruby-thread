@@ -166,11 +166,9 @@ class Thread::Every
 	# call.
 	def value!
 		@mutex.synchronize {
-			if cond?
-				@old = true
-			end
+			@old = true
 
-			@value
+			@value unless @exception
 		}
 	end
 
