@@ -249,7 +249,11 @@ class Thread::Pool
 
 	# Join on all threads in the pool.
 	def join
-		@workers.first.join until @workers.empty?
+		until @workers.empty?
+			if worker = @workers.first
+				worker.join
+			end
+		end
 
 		self
 	end
@@ -304,9 +308,9 @@ private
 							@waiting += 1
 							@cond.wait @mutex
 							@waiting -= 1
+						end
 
-							break !shutdown?
-						end or break
+						break if @todo.empty? && shutdown?
 					end
 
 					@todo.shift
