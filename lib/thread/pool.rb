@@ -117,6 +117,9 @@ class Thread::Pool
 		@cond  = ConditionVariable.new
 		@mutex = Mutex.new
 
+		@done       = ConditionVariable.new
+		@done_mutex = Mutex.new
+
 		@todo     = []
 		@workers  = []
 		@timeouts = {}
@@ -126,6 +129,7 @@ class Thread::Pool
 		@shutdown      = false
 		@trim_requests = 0
 		@auto_trim     = false
+		@idle_trim     = nil
 
 		@mutex.synchronize {
 			min.times {
@@ -153,6 +157,22 @@ class Thread::Pool
 		@auto_trim = false
 	end
 
+	# Check if idle trimming is enabled.
+	def idle_trim?
+		!@idle_trim.nil?
+	end
+
+	# Enable idle trimming. Unneeded threads will be deleted after the given number of seconds of inactivity.
+	# The minimum number of threads is respeced.
+	def idle_trim!(timeout)
+		@idle_trim = timeout
+	end
+
+	# Turn of idle trimming.
+	def no_idle_trim!
+		@idle_trim = nil
+	end
+
 	# Resize the pool with the passed arguments.
 	def resize (min, max = nil)
 		@min = min
@@ -165,6 +185,19 @@ class Thread::Pool
 	def backlog
 		@mutex.synchronize {
 			@todo.length
+		}
+	end
+
+	# Are all tasks consumed ?
+	def done?
+		@todo.empty? and @waiting == @spawned
+	end
+
+	# Wait until all tasks are consumed. The caller will be blocked until then.
+	def wait_done
+		@done_mutex.synchronize {
+			return if done?
+			@done.wait @done_mutex
 		}
 	end
 
@@ -202,7 +235,7 @@ class Thread::Pool
 	def trim (force = false)
 		@mutex.synchronize {
 			if (force || @waiting > 0) && @spawned - @trim_requests > @min
-				@trim_requests -= 1
+				@trim_requests += 1
 				@cond.signal
 			end
 		}
@@ -306,7 +339,17 @@ private
 							break if shutdown?
 
 							@waiting += 1
-							@cond.wait @mutex
+
+							report_done
+
+							if @idle_trim and @spawned > @min
+								check_time = Time.now + @idle_trim
+								@cond.wait @mutex, @idle_trim
+								@trim_requests += 1 if Time.now >= check_time && @spawned - @trim_requests > @min
+							else
+								@cond.wait @mutex
+							end
+
 							@waiting -= 1
 						end
 
@@ -368,6 +411,13 @@ private
 			end
 		}
 	end
+
+	def report_done
+		@done_mutex.synchronize {
+			@done.broadcast if done?
+		}
+	end
+
 end
 
 class Thread
