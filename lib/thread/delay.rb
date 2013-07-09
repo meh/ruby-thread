@@ -50,11 +50,11 @@ class Thread::Delay
 	# In case the block raises an exception, it will be raised, the exception is
 	# cached and will be raised every time you access the value.
 	def value
-		raise @exception if exception?
-
-		return @value if realized?
-
 		@mutex.synchronize {
+			raise @exception if instance_variable_defined? :@exception
+
+			return @value if instance_variable_defined? :@value
+
 			begin
 				@value = @block.call
 			rescue Exception => e
