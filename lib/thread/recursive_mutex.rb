@@ -16,6 +16,7 @@ require 'thread'
 # You really shouldn't use this, but in some cases it makes your life easier.
 class RecursiveMutex < Mutex
 	def initialize
+		@threads_lock = Mutex.new
 		@threads = Hash.new { |h, k| h[k] = 0 }
 
 		super
@@ -23,19 +24,13 @@ class RecursiveMutex < Mutex
 
 	# Lock the mutex.
 	def lock
-		@thread[Thread.current] += 1
-
-		if @thread[Thread.current] == 1
-			super
-		end
+		super if @threads_lock.synchronize{ (@threads[Thread.current] += 1) == 1 }
 	end
 
 	# Unlock the mutex.
 	def unlock
-		@thread[Thread.current] -= 1
-
-		if @thread[Thread.current] == 0
-			@thread.delete(Thread.current)
+		if @threads_lock.synchronize{ (@threads[Thread.current] -= 1) == 0 }
+			@threads.delete(Thread.current)
 
 			super
 		end
