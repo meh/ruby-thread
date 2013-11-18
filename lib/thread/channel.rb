@@ -49,10 +49,9 @@ class Thread::Channel
 	# If a block is passed, it's used as guard to match to a message.
 	def receive (&block)
 		message = nil
+		found   = false
 
 		if block
-			found = false
-
 			until found
 				@mutex.synchronize {
 					if index = @messages.find_index(&block)
@@ -64,13 +63,18 @@ class Thread::Channel
 				}
 			end
 		else
-			@mutex.synchronize {
-				if @messages.empty?
-					cond.wait @mutex
-				end
+			until found
+				@mutex.synchronize {
+					if @messages.empty?
+						cond.wait @mutex
+					end
 
-				message = @messages.shift
-			}
+					unless @messages.empty?
+						message = @messages.shift
+						found   = true
+					end
+				}
+			end
 		end
 
 		message
