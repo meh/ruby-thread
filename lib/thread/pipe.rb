@@ -14,7 +14,7 @@ require 'thread'
 # each datum inserted in the pipe is passed along through queues to the various
 # functions composing the pipe, the final result is inserted in the final queue.
 class Thread::Pipe
-	# A task incapsulates a part of the pipe.
+	# A task encapsulates a part of the pipe.
 	class Task
 		attr_accessor :input, :output
 
