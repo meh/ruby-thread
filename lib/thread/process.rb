@@ -10,9 +10,8 @@
 
 require 'thread/channel'
 
-# A process should only interact with the outside the outside through messages,
-# it still uses a thread, but it should make it safer to use than sharing and
-# locks.
+# A process should only interact with the outside through messages, it still
+# uses a thread, but it should make it safer to use than sharing and locks.
 class Thread::Process
 	def self.all
 		@@processes ||= {}
