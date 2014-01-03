@@ -100,7 +100,7 @@ class Thread::Pool
 		end
 	end
 
-	attr_reader :min, :max, :spawned
+	attr_reader :min, :max, :spawned, :waiting
 
 	# Create the pool with minimum and maximum threads.
 	#
