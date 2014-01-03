@@ -100,7 +100,7 @@ class Thread::Pool
 		end
 	end
 
-	attr_reader :min, :max, :spawned
+	attr_reader :min, :max, :spawned, :waiting
 
 	# Create the pool with minimum and maximum threads.
 	#
@@ -119,7 +119,7 @@ class Thread::Pool
 
 		@done       = ConditionVariable.new
 		@done_mutex = Mutex.new
-
+		
 		@todo     = []
 		@workers  = []
 		@timeouts = {}
@@ -200,7 +200,29 @@ class Thread::Pool
 			@done.wait @done_mutex
 		}
 	end
+	
+        # Check if there are idle workers. 
+        def idle?
+               @todo.length < @waiting
+        end
 
+        # Process Block when there is a idle worker if not block its returns
+        def idle (&block)
+                while !idle?
+                        @done_mutex.synchronize {
+                                break if idle?
+                                @done.wait @done_mutex
+                        }
+                end
+
+                unless block
+                        return
+                end
+
+                process &block
+
+        end
+        
 	# Add a task to the pool which will execute the block with the given
 	# argument.
 	#
@@ -414,10 +436,9 @@ private
 
 	def report_done
 		@done_mutex.synchronize {
-			@done.broadcast if done?
+			@done.broadcast if done? or idle?
 		}
 	end
-
 end
 
 class Thread
