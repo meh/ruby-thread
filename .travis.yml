@@ -1,7 +1,13 @@
 language: ruby
+
 rvm:
   - "1.9.2"
   - "1.9.3"
   - "2.0.0"
   - jruby
   - rbx
+
+before_script:
+  - gem install rspec
+  - gem build *.gemspec
+  - gem install *.gem
