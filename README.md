@@ -137,7 +137,12 @@ another thread.
 
 The value returned by the block will be the value of the promise.
 
-By default, `Thread.future` executes the block in a newly-created thread.  `Thread.future` accepts an optional argument of type `Thread.pool` if you want the block executed in an existing thread-pool.
+By default, `Thread.future` executes the block in a newly-created thread.
+
+`Thread.future` accepts an optional argument of type `Thread.pool` if you want
+the block executed in an existing thread-pool.
+
+You can also use the `Thread::Pool` helper `#future`
 
 Example
 -------
@@ -159,13 +164,27 @@ require 'thread/pool'
 require 'thread/future'
 
 pool = Thread.pool 4
-f = Thread.future pool {
+f    = Thread.future pool do
+  sleep 5
+  42
+end
+
+puts ~f # => 42
+```
+
+```ruby
+require 'thread/pool'
+require 'thread/future'
+
+pool = Thread.pool 4
+f    = pool {
   sleep 5
   42
 }
 
 puts ~f # => 42
 ```
+
 
 Delay
 =====
