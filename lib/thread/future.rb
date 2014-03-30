@@ -156,3 +156,9 @@ module Kernel
 		Thread::Future.new(pool, &block)
 	end
 end
+
+class Thread::Pool
+	def future (&block)
+		Thread.future self, &block
+	end
+end
