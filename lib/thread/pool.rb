@@ -207,7 +207,7 @@ class Thread::Pool
         end
 
         # Process Block when there is a idle worker if not block its returns
-        def idle (&block)
+        def idle (*args, &block)
                 while !idle?
                         @done_mutex.synchronize {
                                 break if idle?
@@ -219,7 +219,7 @@ class Thread::Pool
                         return
                 end
 
-                process &block
+                process *args, &block
 
         end
         
