@@ -12,7 +12,7 @@ describe Thread::Pipe do
 	end
 
 	it 'empty works properly' do
-		p = Thread |-> d { sleep 0.2; d * 2 } |-> d { d * 4 }
+		p = Thread |-> d { sleep 0.02; d * 2 } |-> d { d * 4 }
 
 		p.empty?.should == true
 		p.enq 42
