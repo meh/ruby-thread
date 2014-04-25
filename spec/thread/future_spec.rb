@@ -1,12 +1,9 @@
-#! /usr/bin/env ruby
-require 'rubygems'
 require 'thread/future'
 
 describe Thread::Future do
 	it 'delivers a value properly' do
 		f = Thread.future {
 			sleep 0.2
-			
 			42
 		}
 

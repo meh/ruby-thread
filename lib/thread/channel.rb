@@ -91,7 +91,7 @@ class Thread::Channel
 		end
 	end
 
-private
+	private
 	def cond?
 		instance_variable_defined? :@cond
 	end
