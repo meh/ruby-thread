@@ -121,7 +121,7 @@ class Thread::Future
 
 	alias ! value!
 
-private
+	private
 	def cond?
 		instance_variable_defined? :@cond
 	end

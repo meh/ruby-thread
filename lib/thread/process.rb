@@ -53,7 +53,7 @@ class Thread::Process
 
 	alias << send
 
-private
+	private
 	def receive
 		@channel.receive
 	end

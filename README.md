@@ -1,17 +1,29 @@
-thread - various extensions to the thread library
-=================================================
+# thread
 
-Pool
-====
+[![Build Status](https://travis-ci.org/meh/ruby-thread.svg?branch=master)](https://travis-ci.org/meh/ruby-thread)
+
+Various extensions to the thread library in ruby.
+
+## Installation
+
+Add this line to your application's Gemfile:
+
+    gem 'thread'
+
+Or install it yourself as:
+
+    $ gem install thread
+
+## Usage
+
+### Pool
+
 All the implementations I looked at were either buggy or wasted CPU resources
 for no apparent reason, for example used a sleep of 0.01 seconds to then check for
 readiness and stuff like this.
 
 This implementation uses standard locking functions to work properly across multiple Ruby
 implementations.
-
-Example
--------
 
 ```ruby
 require 'thread/pool'
@@ -31,12 +43,9 @@ pool.shutdown
 
 You should get 4 lols every 2 seconds and it should exit after 10 of them.
 
-Channel
-=======
-This implements a channel where you can write messages and receive messages.
+### Channel
 
-Example
--------
+This implements a channel where you can write messages and receive messages.
 
 ```ruby
 require 'thread/channel'
@@ -67,14 +76,11 @@ loop {
 }
 ```
 
-Pipe
-====
+### Pipe
+
 A pipe allows you to execute various tasks on a set of data in parallel,
 each datum inserted in the pipe is passed along through queues to the various
 functions composing the pipe, the final result is inserted in the final queue.
-
-Example
--------
 
 ```ruby
 require 'thread/pipe'
@@ -85,15 +91,12 @@ p << 2
 puts ~p # => 16
 ```
 
-Process
-=======
+### Process
+
 A process helps reducing programming errors coming from race conditions and the
 like, the only way to interact with a process is through messages.
 
 Multiple processes should talk with eachother through messages.
-
-Example
--------
 
 ```ruby
 require 'thread/process'
@@ -108,14 +111,11 @@ p << 42
 p << 23
 ```
 
-Promise
-=======
+### Promise
+
 This implements the promise pattern, allowing you to pass around an object
 where you can send a value and extract a value, in a thread-safe way, accessing
 the value will wait for the value to be delivered.
-
-Example
--------
 
 ```ruby
 require 'thread/promise'
@@ -130,8 +130,8 @@ Thread.new {
 puts ~p # => 42
 ```
 
-Future
-======
+### Future
+
 A future is somewhat a promise, except you pass it a block to execute in
 another thread.
 
@@ -143,9 +143,6 @@ By default, `Thread.future` executes the block in a newly-created thread.
 the block executed in an existing thread-pool.
 
 You can also use the `Thread::Pool` helper `#future`
-
-Example
--------
 
 ```ruby
 require 'thread/future'
@@ -186,13 +183,10 @@ puts ~f # => 42
 ```
 
 
-Delay
-=====
+### Delay
+
 A delay is kind of a promise, except the block is called when the value is
 being accessed and the result is cached.
-
-Example
--------
 
 ```ruby
 require 'thread/delay'
@@ -204,14 +198,11 @@ d = Thread.delay {
 puts ~d # => 42
 ```
 
-Every
-=====
+### Every
+
 An every executes the block every given seconds and yields the value to the
 every object, you can then check if the current value is old or how much time
 is left until the second call is done.
-
-Example
--------
 
 ```ruby
 require 'net/http'
@@ -227,3 +218,12 @@ loop do
 	puts ~e
 end
 ```
+
+## Contributing
+
+1. Fork it ( https://github.com/meh/ruby-thread/fork )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Verify new and old specs are green (`rake`)
+4. Commit your changes (`git commit -am 'Add some feature'`)
+5. Push to the branch (`git push origin my-new-feature`)
+6. Create a new Pull Request

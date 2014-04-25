@@ -106,7 +106,7 @@ class Thread::Pipe
 	def deq (non_block = false)
 		@output.deq(non_block)
 	end
-	
+
 	alias pop deq
 	alias ~   deq
 end

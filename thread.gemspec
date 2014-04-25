@@ -1,19 +1,23 @@
-Gem::Specification.new {|s|
-	s.name         = 'thread'
-	s.version      = '0.1.4'
-	s.author       = 'meh.'
-	s.email        = 'meh@schizofreni.co'
-	s.homepage     = 'http://github.com/meh/ruby-thread'
-	s.platform     = Gem::Platform::RUBY
-	s.summary      = 'Various extensions to the base thread library.'
-	s.description  = 'Includes a thread pool, message passing capabilities, a recursive mutex, promise, future and delay.'
-	s.license      = 'WTFPL'
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
-	s.files         = `git ls-files`.split("\n")
-	s.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
-	s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
-	s.require_paths = ['lib']
+Gem::Specification.new do |spec|
+  spec.name          = "thread"
+  spec.version       = "0.2.0"
+  spec.authors       = ["meh."]
+  spec.email         = ["meh@schizofreni.co"]
+  spec.summary       = %q{Various extensions to the base thread library.}
+  spec.description   = %q{Includes a thread pool, message passing capabilities, a recursive mutex, promise, future and delay.}
+  spec.homepage      = "http://github.com/meh/ruby-thread"
+  spec.license       = "WTFPL"
 
-	s.add_development_dependency 'rspec'
-	s.add_development_dependency 'rake'
-}
+  spec.files         = `git ls-files -z`.split("\x0")
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.require_paths = ["lib"]
+
+  spec.add_development_dependency "bundler", "~> 1.6"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "rake"
+end

@@ -1,5 +1,3 @@
-#! /usr/bin/env ruby
-require 'rubygems'
 require 'thread/delay'
 
 describe Thread::Delay do

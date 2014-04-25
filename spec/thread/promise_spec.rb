@@ -1,5 +1,3 @@
-#! /usr/bin/env ruby
-require 'rubygems'
 require 'thread/promise'
 
 describe Thread::Promise do

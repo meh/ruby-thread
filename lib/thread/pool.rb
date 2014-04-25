@@ -119,7 +119,7 @@ class Thread::Pool
 
 		@done       = ConditionVariable.new
 		@done_mutex = Mutex.new
-		
+
 		@todo     = []
 		@workers  = []
 		@timeouts = {}
@@ -200,29 +200,29 @@ class Thread::Pool
 			@done.wait @done_mutex
 		}
 	end
-	
-        # Check if there are idle workers. 
-        def idle?
-               @todo.length < @waiting
-        end
 
-        # Process Block when there is a idle worker if not block its returns
-        def idle (*args, &block)
-                while !idle?
-                        @done_mutex.synchronize {
-                                break if idle?
-                                @done.wait @done_mutex
-                        }
-                end
+	# Check if there are idle workers.
+	def idle?
+		@todo.length < @waiting
+	end
 
-                unless block
-                        return
-                end
+	# Process Block when there is a idle worker if not block its returns
+	def idle (*args, &block)
+		while !idle?
+			@done_mutex.synchronize {
+				break if idle?
+				@done.wait @done_mutex
+			}
+		end
 
-                process *args, &block
+		unless block
+			return
+		end
 
-        end
-        
+		process *args, &block
+
+	end
+
 	# Add a task to the pool which will execute the block with the given
 	# argument.
 	#
@@ -337,7 +337,7 @@ class Thread::Pool
 		self
 	end
 
-private
+	private
 	def wake_up_timeout
 		if defined? @pipes
 			@pipes.last.write_nonblock 'x' rescue nil
@@ -398,7 +398,7 @@ private
 
 		thread
 	end
-	
+
 	def spawn_timeout_thread
 		@pipes   = IO.pipe
 		@timeout = Thread.new {
@@ -428,7 +428,7 @@ private
 				}
 
 				@timeouts.reject! { |task, _| task.terminated? || task.finished? }
-				
+
 				break if @shutdown == :now
 			end
 		}
