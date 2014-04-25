@@ -121,11 +121,11 @@ class Thread::Every
 
 	# Check if the every is old, after the first #value call it becomes old,
 	# until another run of the block is gone)
-def old?
-	@mutex.synchronize {
-		@old
-	}
-end
+	def old?
+		@mutex.synchronize {
+			@old
+		}
+	end
 
 	# Gets the Time when the block was called.
 	def called_at
