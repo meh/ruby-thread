@@ -5,7 +5,7 @@ describe Thread::Promise do
 		p = Thread.promise
 
 		Thread.new {
-			sleep 0.2
+			sleep 0.02
 
 			p << 42
 		}
@@ -17,13 +17,13 @@ describe Thread::Promise do
 		p = Thread.promise
 
 		Thread.new {
-			sleep 0.2
+			sleep 0.02
 
 			p << 42
 		}
 
 		p.delivered?.should == false
-		sleep 0.3
+		sleep 0.03
 		p.delivered?.should == true
 	end
 

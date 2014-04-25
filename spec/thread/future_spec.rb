@@ -3,7 +3,7 @@ require 'thread/future'
 describe Thread::Future do
 	it 'delivers a value properly' do
 		f = Thread.future {
-			sleep 0.2
+			sleep 0.02
 			42
 		}
 
@@ -12,19 +12,19 @@ describe Thread::Future do
 
 	it 'properly checks if anything has been delivered' do
 		f = Thread.future {
-			sleep 0.2
+			sleep 0.02
 
 			42
 		}
 
 		f.delivered?.should == false
-		sleep 0.3
+		sleep 0.03
 		f.delivered?.should == true
 	end
 
 	it 'does not block when a timeout is passed' do
 		f = Thread.future {
-			sleep 0.2
+			sleep 0.02
 
 			42
 		}
