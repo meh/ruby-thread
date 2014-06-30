@@ -61,6 +61,7 @@ class Thread::Pool
 					return
 				else
 					@exception = reason
+					raise @exception if Thread::Pool.abort_on_exception
 				end
 			end
 
@@ -335,6 +336,13 @@ class Thread::Pool
 		}
 
 		self
+	end
+
+	@abort_on_exception = false
+	class << self
+		# If true, tasks will allow raised exceptions to pass through.
+		# Similar to Thread.abort_on_exception
+		attr_accessor :abort_on_exception
 	end
 
 	private
