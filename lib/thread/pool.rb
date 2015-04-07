@@ -227,7 +227,6 @@ class Thread::Pool
 		end
 
 		process *args, &block
-
 	end
 
 	# Add a task to the pool which will execute the block with the given
