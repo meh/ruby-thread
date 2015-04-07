@@ -196,10 +196,12 @@ class Thread::Pool
 
 	# Wait until all tasks are consumed. The caller will be blocked until then.
 	def wait_done
-		@done_mutex.synchronize {
-			return if done?
-			@done.wait @done_mutex
-		}
+		loop do
+			@done_mutex.synchronize {
+				return if done?
+				@done.wait @done_mutex
+			}
+		end
 	end
 
 	# Check if there are idle workers.
