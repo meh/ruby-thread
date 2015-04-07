@@ -191,14 +191,16 @@ class Thread::Pool
 
 	# Are all tasks consumed ?
 	def done?
-		@todo.empty? and @waiting == @spawned
+		@mutex.synchronize {
+			@todo.empty? and @waiting == @spawned
+		}
 	end
 
 	# Wait until all tasks are consumed. The caller will be blocked until then.
 	def wait_done
 		loop do
 			@done_mutex.synchronize {
-				return if done?
+				return self if done?
 				@done.wait @done_mutex
 			}
 		end
@@ -206,7 +208,9 @@ class Thread::Pool
 
 	# Check if there are idle workers.
 	def idle?
-		@todo.length < @waiting
+		@mutex.synchronize {
+			@todo.length < @waiting
+		}
 	end
 
 	# Process Block when there is a idle worker if not block its returns
