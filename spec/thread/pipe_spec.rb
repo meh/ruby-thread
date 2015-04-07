@@ -7,17 +7,17 @@ describe Thread::Pipe do
 		p << 2
 		p << 4
 
-		p.deq.should == 16
-		p.deq.should == 32
+		expect(p.deq).to eq(16)
+		expect(p.deq).to eq(32)
 	end
 
 	it 'empty works properly' do
 		p = Thread |-> d { sleep 0.02; d * 2 } |-> d { d * 4 }
 
-		p.empty?.should == true
+		expect(p.empty?).to be(true)
 		p.enq 42
-		p.empty?.should == false
+		expect(p.empty?).to be(false)
 		p.deq
-		p.empty?.should == true
+		expect(p.empty?).to be(true)
 	end
 end

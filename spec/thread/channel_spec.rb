@@ -6,8 +6,8 @@ describe Thread::Channel do
 		ch.send 'lol'
 		ch.send 'wut'
 
-		ch.receive.should == 'lol'
-		ch.receive.should == 'wut'
+		expect(ch.receive).to eq('lol')
+		expect(ch.receive).to eq('wut')
 	end
 
 	it 'receives with constraints properly' do
@@ -15,14 +15,14 @@ describe Thread::Channel do
 		ch.send 'lol'
 		ch.send 'wut'
 
-		ch.receive { |v| v == 'wut' }.should == 'wut'
-		ch.receive.should == 'lol'
+		expect(ch.receive { |v| v == 'wut' }).to eq('wut')
+		expect(ch.receive).to eq('lol')
 	end
 
 	it 'receives nil when using non blocking mode and the channel is empty' do
 		ch = Thread.channel
 
-		ch.receive!.should == nil
+		expect(ch.receive!).to be_nil
 	end
 
 	it 'guards sending properly' do

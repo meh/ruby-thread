@@ -6,6 +6,6 @@ describe Thread::Delay do
 			42
 		}
 
-		d.value.should == 42
+		expect(d.value).to eq(42)
 	end
 end

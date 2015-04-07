@@ -7,7 +7,7 @@ describe Thread::Future do
 			42
 		}
 
-		f.value.should == 42
+		expect(f.value).to eq(42)
 	end
 
 	it 'properly checks if anything has been delivered' do
@@ -17,9 +17,9 @@ describe Thread::Future do
 			42
 		}
 
-		f.delivered?.should == false
+		expect(f.delivered?).to eq(false)
 		sleep 0.03
-		f.delivered?.should == true
+		expect(f.delivered?).to eq(true)
 	end
 
 	it 'does not block when a timeout is passed' do
@@ -29,6 +29,6 @@ describe Thread::Future do
 			42
 		}
 
-		f.value(0).should == nil
+		expect(f.value(0)).to be_nil
 	end
 end

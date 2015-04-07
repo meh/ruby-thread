@@ -10,7 +10,7 @@ describe Thread::Promise do
 			p << 42
 		}
 
-		p.value.should == 42
+		expect(p.value).to eq(42)
 	end
 
 	it 'properly checks if anything has been delivered' do
@@ -22,14 +22,14 @@ describe Thread::Promise do
 			p << 42
 		}
 
-		p.delivered?.should == false
+		expect(p.delivered?).to be(false)
 		sleep 0.03
-		p.delivered?.should == true
+		expect(p.delivered?).to be(true)
 	end
 
 	it 'does not block when a timeout is passed' do
 		p = Thread.promise
 
-		p.value(0).should == nil
+		expect(p.value(0)).to be(nil)
 	end
 end
