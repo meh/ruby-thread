@@ -192,7 +192,7 @@ class Thread::Pool
 	# Are all tasks consumed ?
 	def done?
 		@mutex.synchronize {
-			@todo.empty? and @waiting == @spawned
+			_done?
 		}
 	end
 
@@ -209,7 +209,7 @@ class Thread::Pool
 	# Check if there are idle workers.
 	def idle?
 		@mutex.synchronize {
-			@todo.length < @waiting
+			_idle?
 		}
 	end
 
@@ -350,7 +350,7 @@ class Thread::Pool
 		attr_accessor :abort_on_exception
 	end
 
-	private
+private
 	def wake_up_timeout
 		if defined? @pipes
 			@pipes.last.write_nonblock 'x' rescue nil
@@ -375,7 +375,7 @@ class Thread::Pool
 
 							@waiting += 1
 
-							report_done
+							done!
 
 							if @idle_trim and @spawned > @min
 								check_time = Time.now + @idle_trim
@@ -447,9 +447,17 @@ class Thread::Pool
 		}
 	end
 
-	def report_done
+	def _done?
+		@todo.empty? and @waiting == @spawned
+	end
+
+	def _idle?
+		@todo.length < @waiting
+	end
+
+	def done!
 		@done_mutex.synchronize {
-			@done.broadcast if done? or idle?
+			@done.broadcast if _done? or _idle?
 		}
 	end
 end
