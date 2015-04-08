@@ -22,7 +22,7 @@ class Thread::Pool
 		Timeout = Class.new(Exception)
 		Asked   = Class.new(Exception)
 
-		attr_reader :pool, :timeout, :exception, :thread, :started_at
+		attr_reader :pool, :timeout, :exception, :thread, :started_at, :result
 
 		# Create a task in the given pool which will pass the arguments to the
 		# block.
@@ -53,7 +53,7 @@ class Thread::Pool
 			pool.__send__ :wake_up_timeout
 
 			begin
-				@block.call(*@arguments)
+				@result = @block.call(*@arguments)
 			rescue Exception => reason
 				if reason.is_a? Timeout
 					@timedout = true
@@ -99,6 +99,11 @@ class Thread::Pool
 
 			self
 		end
+
+		def wait
+			pool.wait [self]
+			self
+		end
 	end
 
 	attr_reader :min, :max, :spawned, :waiting
@@ -120,6 +125,9 @@ class Thread::Pool
 
 		@done       = ConditionVariable.new
 		@done_mutex = Mutex.new
+
+		@task_done       = ConditionVariable.new
+		@task_done_mutex = Mutex.new
 
 		@todo     = []
 		@workers  = []
@@ -203,6 +211,16 @@ class Thread::Pool
 				return self if done?
 				@done.wait @done_mutex
 			}
+		end
+	end
+
+	# wait until all listed tasks are consumed. The caller will be blocked until then.
+	def wait( tasks)
+		tasks = [tasks] unless tasks.is_a? Array
+		@task_done_mutex.synchronize do
+			until tasks.reject{ |t| t.finished? }.empty?
+				@task_done.wait @task_done_mutex
+			end
 		end
 	end
 
@@ -396,6 +414,8 @@ class Thread::Pool
 
 				task.execute(thread)
 
+				report_task_done
+
 				break if @shutdown == :now
 
 				trim if auto_trim? && @spawned > @min
@@ -444,6 +464,12 @@ class Thread::Pool
 
 				break if @shutdown == :now
 			end
+		}
+	end
+
+	def report_task_done
+		@task_done_mutex.synchronize {
+			@task_done.broadcast
 		}
 	end
 
