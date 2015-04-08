@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "thread"
-  spec.version       = "0.1.6"
+  spec.version       = "0.1.7"
   spec.authors       = ["meh."]
   spec.email         = ["meh@schizofreni.co"]
   spec.summary       = %q{Various extensions to the base thread library.}
