@@ -17,20 +17,20 @@ class Thread::Process
 		@@processes ||= {}
 	end
 
-	def self.register (name, process)
+	def self.register(name, process)
 		all[name] = process
 	end
 
-	def self.unregister (name)
+	def self.unregister(name)
 		all.delete(name)
 	end
 
-	def self.[] (name)
+	def self.[](name)
 		all[name]
 	end
 
 	# Create a new process executing the block.
-	def initialize (&block)
+	def initialize(&block)
 		@channel = Thread::Channel.new
 
 		Thread.new {
@@ -41,7 +41,7 @@ class Thread::Process
 	end
 
 	# Send a message to the process.
-	def send (what)
+	def send(what)
 		unless @channel
 			raise RuntimeError, 'the process has terminated'
 		end
@@ -53,7 +53,7 @@ class Thread::Process
 
 	alias << send
 
-	private
+private
 	def receive
 		@channel.receive
 	end
@@ -65,7 +65,7 @@ end
 
 class Thread
 	# Helper to create a process.
-	def self.process (&block)
+	def self.process(&block)
 		Thread::Process.new(&block)
 	end
 end
