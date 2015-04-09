@@ -20,7 +20,7 @@ class Thread::Pipe
 
 		# Create a Task which will call the passed function and get input
 		# from the optional parameter and put output in the optional parameter.
-		def initialize (func, input = Queue.new, output = Queue.new)
+		def initialize(func, input = Queue.new, output = Queue.new)
 			@input    = input
 			@output   = output
 			@handling = false
@@ -54,7 +54,7 @@ class Thread::Pipe
 	# output queue.
 	#
 	# The objects must respond to #enq and #deq, and block on #deq.
-	def initialize (input = Queue.new, output = Queue.new)
+	def initialize(input = Queue.new, output = Queue.new)
 		@tasks = []
 
 		@input  = input
@@ -64,7 +64,7 @@ class Thread::Pipe
 	end
 
 	# @private
-	def self.finalizer (tasks)
+	def self.finalizer(tasks)
 		proc {
 			tasks.each(&:kill)
 		}
@@ -72,7 +72,7 @@ class Thread::Pipe
 
 	# Add a task to the pipe, it must respond to #call and #arity,
 	# and #arity must return 1.
-	def | (func)
+	def |(func)
 		if func.arity != 1
 			raise ArgumentError, 'wrong arity'
 		end
@@ -91,7 +91,7 @@ class Thread::Pipe
 	end
 
 	# Insert data in the pipe.
-	def enq (data)
+	def enq(data)
 		return if @tasks.empty?
 
 		@input.enq data
@@ -103,7 +103,7 @@ class Thread::Pipe
 	alias <<   enq
 
 	# Get an element from the output queue.
-	def deq (non_block = false)
+	def deq(non_block = false)
 		@output.deq(non_block)
 	end
 
@@ -113,7 +113,7 @@ end
 
 class Thread
 	# Helper to create a pipe.
-	def self.| (func)
+	def self.|(func)
 		Pipe.new | func
 	end
 end
