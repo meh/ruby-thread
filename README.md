@@ -174,7 +174,7 @@ require 'thread/pool'
 require 'thread/future'
 
 pool = Thread.pool 4
-f    = pool {
+f    = pool.future {
   sleep 5
   42
 }
