@@ -16,7 +16,7 @@ require 'thread'
 # messages are safe to be consumed.
 class Thread::Channel
 	# Create a channel with optional initial messages and optional channel guard.
-	def initialize (messages = [], &block)
+	def initialize(messages = [], &block)
 		@messages = []
 		@mutex    = Mutex.new
 		@check    = block
@@ -30,7 +30,7 @@ class Thread::Channel
 	#
 	# If there's a guard, the value is passed to it, if the guard returns a falsy value
 	# an ArgumentError exception is raised and the message is not sent.
-	def send (what)
+	def send(what)
 		if @check && !@check.call(what)
 			raise ArgumentError, 'guard mismatch'
 		end
@@ -47,7 +47,7 @@ class Thread::Channel
 	# Receive a message, if there are none the call blocks until there's one.
 	#
 	# If a block is passed, it's used as guard to match to a message.
-	def receive (&block)
+	def receive(&block)
 		message = nil
 		found   = false
 
@@ -83,7 +83,7 @@ class Thread::Channel
 	# Receive a message, if there are none the call returns nil.
 	#
 	# If a block is passed, it's used as guard to match to a message.
-	def receive! (&block)
+	def receive!(&block)
 		if block
 			@messages.delete_at(@messages.find_index(&block))
 		else
@@ -91,7 +91,7 @@ class Thread::Channel
 		end
 	end
 
-	private
+private
 	def cond?
 		instance_variable_defined? :@cond
 	end
@@ -103,7 +103,7 @@ end
 
 class Thread
 	# Helper to create a channel.
-	def self.channel (*args, &block)
+	def self.channel(*args, &block)
 		Thread::Channel.new(*args, &block)
 	end
 end
