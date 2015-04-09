@@ -27,7 +27,7 @@ class Thread::Promise
 	alias realized? delivered?
 
 	# Deliver a value.
-	def deliver (value)
+	def deliver(value)
 		return self if delivered?
 
 		@mutex.synchronize {
@@ -46,7 +46,7 @@ class Thread::Promise
 	#
 	# An optional timeout can be passed which will return nil if nothing has been
 	# delivered.
-	def value (timeout = nil)
+	def value(timeout = nil)
 		return @value if delivered?
 
 		@mutex.synchronize {
@@ -58,7 +58,7 @@ class Thread::Promise
 
 	alias ~ value
 
-	private
+private
 	def cond?
 		instance_variable_defined? :@cond
 	end
