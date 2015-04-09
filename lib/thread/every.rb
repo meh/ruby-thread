@@ -18,7 +18,7 @@ class Thread::Every
 	Restart = Class.new(Exception)
 
 	# Create an every with the given seconds and block.
-	def initialize (every, &block)
+	def initialize(every, &block)
 		raise ArgumentError, 'no block given' unless block
 
 		@every  = every
@@ -67,14 +67,14 @@ class Thread::Every
 	end
 
 	# @private
-	def self.finalizer (thread)
+	def self.finalizer(thread)
 		proc {
 			thread.raise Cancel.new
 		}
 	end
 
 	# Change the number of seconds between each call.
-	def every (seconds)
+	def every(seconds)
 		@every = seconds
 
 		restart
@@ -144,7 +144,7 @@ class Thread::Every
 	end
 
 	# Gets the current every value.
-	def value (timeout = nil)
+	def value(timeout = nil)
 		@mutex.synchronize {
 			if @old
 				cond.wait(@mutex, *timeout)
@@ -172,7 +172,7 @@ class Thread::Every
 		}
 	end
 
-	private
+private
 	def cond?
 		instance_variable_defined? :@cond
 	end
@@ -184,14 +184,14 @@ end
 
 class Thread
 	# Helper to create an every
-	def self.every (every, &block)
+	def self.every(every, &block)
 		Thread::Every.new(every, &block)
 	end
 end
 
 module Kernel
 	# Helper to create an every
-	def every (every, &block)
+	def every(every, &block)
 		Thread::Every.new(every, &block)
 	end
 end
