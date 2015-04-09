@@ -17,7 +17,7 @@ class Thread::Future
 	Cancel = Class.new(Exception)
 
 	# Create a future with the passed block and optionally using the passed pool.
-	def initialize (pool = nil, &block)
+	def initialize(pool = nil, &block)
 		raise ArgumentError, 'no block given' unless block
 
 		@mutex = Mutex.new
@@ -38,7 +38,7 @@ class Thread::Future
 	end
 
 	# @private
-	def self.finalizer (thread)
+	def self.finalizer(thread)
 		proc {
 			thread.raise Cancel.new
 		}
@@ -92,7 +92,7 @@ class Thread::Future
 	#
 	# An optional timeout can be passed which will return nil if nothing has been
 	# delivered.
-	def value (timeout = nil)
+	def value(timeout = nil)
 		raise @exception if exception?
 
 		return @value if delivered?
@@ -111,7 +111,7 @@ class Thread::Future
 	alias ~ value
 
 	# Do the same as {#value}, but return nil in case of exception.
-	def value! (timeout = nil)
+	def value!(timeout = nil)
 		begin
 			value(timeout)
 		rescue Exception
@@ -121,7 +121,7 @@ class Thread::Future
 
 	alias ! value!
 
-	private
+private
 	def cond?
 		instance_variable_defined? :@cond
 	end
@@ -145,20 +145,20 @@ end
 
 class Thread
 	# Helper to create a future
-	def self.future (pool = nil, &block)
+	def self.future(pool = nil, &block)
 		Thread::Future.new(pool, &block)
 	end
 end
 
 module Kernel
 	# Helper to create a future.
-	def future (pool = nil, &block)
+	def future(pool = nil, &block)
 		Thread::Future.new(pool, &block)
 	end
 end
 
 class Thread::Pool
-	def future (&block)
+	def future(&block)
 		Thread.future self, &block
 	end
 end
