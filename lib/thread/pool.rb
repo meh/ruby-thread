@@ -22,11 +22,11 @@ class Thread::Pool
 		Timeout = Class.new(Exception)
 		Asked   = Class.new(Exception)
 
-		attr_reader :pool, :timeout, :exception, :thread, :started_at
+		attr_reader :pool, :timeout, :exception, :thread, :started_at, :result
 
 		# Create a task in the given pool which will pass the arguments to the
 		# block.
-		def initialize (pool, *args, &block)
+		def initialize(pool, *args, &block)
 			@pool      = pool
 			@arguments = args
 			@block     = block
@@ -37,23 +37,34 @@ class Thread::Pool
 			@terminated = false
 		end
 
-		def running?;    @running;   end
-		def finished?;   @finished;   end
-		def timeout?;    @timedout;   end
-		def terminated?; @terminated; end
+		def running?
+			@running
+		end
 
-		# Execute the task in the given thread.
-		def execute (thread)
+		def finished?
+			@finished
+		end
+
+		def timeout?
+			@timedout
+		end
+
+		def terminated?
+			@terminated
+		end
+
+		# Execute the task.
+		def execute
 			return if terminated? || running? || finished?
 
-			@thread     = thread
+			@thread     = Thread.current
 			@running    = true
 			@started_at = Time.now
 
 			pool.__send__ :wake_up_timeout
 
 			begin
-				@block.call(*@arguments)
+				@result = @block.call(*@arguments)
 			rescue Exception => reason
 				if reason.is_a? Timeout
 					@timedout = true
@@ -71,12 +82,12 @@ class Thread::Pool
 		end
 
 		# Raise an exception in the thread used by the task.
-		def raise (exception)
+		def raise(exception)
 			@thread.raise(exception)
 		end
 
 		# Terminate the exception with an optionally given exception.
-		def terminate! (exception = Asked)
+		def terminate!(exception = Asked)
 			return if terminated? || finished? || timeout?
 
 			@terminated = true
@@ -92,10 +103,10 @@ class Thread::Pool
 		end
 
 		# Timeout the task after the given time.
-		def timeout_after (time)
+		def timeout_after(time)
 			@timeout = time
 
-			pool.timeout_for self, time
+			pool.__send__ :timeout_for, self, time
 
 			self
 		end
@@ -110,7 +121,7 @@ class Thread::Pool
 	#
 	# A default block can be passed, which will be used to {#process} the passed
 	# data.
-	def initialize (min, max = nil, &block)
+	def initialize(min, max = nil, &block)
 		@min   = min
 		@max   = max || min
 		@block = block
@@ -140,7 +151,9 @@ class Thread::Pool
 	end
 
 	# Check if the pool has been shut down.
-	def shutdown?; !!@shutdown; end
+	def shutdown?
+		!!@shutdown
+	end
 
 	# Check if auto trimming is enabled.
 	def auto_trim?
@@ -151,11 +164,15 @@ class Thread::Pool
 	# is reached.
 	def auto_trim!
 		@auto_trim = true
+
+		self
 	end
 
 	# Disable auto trimming.
 	def no_auto_trim!
 		@auto_trim = false
+
+		self
 	end
 
 	# Check if idle trimming is enabled.
@@ -167,15 +184,19 @@ class Thread::Pool
 	# The minimum number of threads is respeced.
 	def idle_trim!(timeout)
 		@idle_trim = timeout
+
+		self
 	end
 
 	# Turn of idle trimming.
 	def no_idle_trim!
 		@idle_trim = nil
+
+		self
 	end
 
 	# Resize the pool with the passed arguments.
-	def resize (min, max = nil)
+	def resize(min, max = nil)
 		@min = min
 		@max = max || min
 
@@ -189,7 +210,7 @@ class Thread::Pool
 		}
 	end
 
-	# Are all tasks consumed ?
+	# Are all tasks consumed?
 	def done?
 		@mutex.synchronize {
 			_done?
@@ -197,13 +218,28 @@ class Thread::Pool
 	end
 
 	# Wait until all tasks are consumed. The caller will be blocked until then.
-	def wait_done
-		loop do
-			@done_mutex.synchronize {
-				return self if done?
-				@done.wait @done_mutex
-			}
+	def wait(what = :idle)
+		case what
+		when :done
+			until done?
+				@done_mutex.synchronize {
+					break if _done?
+
+					@done.wait @done_mutex
+				}
+			end
+
+		when :idle
+			until idle?
+				@done_mutex.synchronize {
+					break if _idle?
+
+					@done.wait @done_mutex
+				}
+			end
 		end
+
+		self
 	end
 
 	# Check if there are idle workers.
@@ -213,28 +249,12 @@ class Thread::Pool
 		}
 	end
 
-	# Process Block when there is a idle worker if not block its returns
-	def idle (*args, &block)
-		while !idle?
-			@done_mutex.synchronize {
-				break if idle?
-				@done.wait @done_mutex
-			}
-		end
-
-		unless block
-			return
-		end
-
-		process *args, &block
-	end
-
 	# Add a task to the pool which will execute the block with the given
 	# argument.
 	#
 	# If no block is passed the default block will be used if present, an
 	# ArgumentError will be raised otherwise.
-	def process (*args, &block)
+	def process(*args, &block)
 		unless block || @block
 			raise ArgumentError, 'you must pass a block'
 		end
@@ -260,7 +280,7 @@ class Thread::Pool
 
 	# Trim the unused threads, if forced threads will be trimmed even if there
 	# are tasks waiting.
-	def trim (force = false)
+	def trim(force = false)
 		@mutex.synchronize {
 			if (force || @waiting > 0) && @spawned - @trim_requests > @min
 				@trim_requests += 1
@@ -295,7 +315,11 @@ class Thread::Pool
 			@cond.broadcast
 		}
 
-		join
+		until @workers.empty?
+			if worker = @workers.first
+				worker.join
+			end
+		end
 
 		if @timeout
 			@shutdown = :now
@@ -304,23 +328,26 @@ class Thread::Pool
 
 			@timeout.join
 		end
-
-		self
 	end
 
-	# Join on all threads in the pool.
-	def join
-		until @workers.empty?
-			if worker = @workers.first
-				worker.join
-			end
-		end
+	# Shutdown the pool after a given amount of time.
+	def shutdown_after(timeout)
+		Thread.new {
+			sleep timeout
 
-		self
+			shutdown
+		}
 	end
 
-	# Define a timeout for a task.
-	def timeout_for (task, timeout)
+	class << self
+		# If true, tasks will allow raised exceptions to pass through.
+		#
+		# Similar to Thread.abort_on_exception
+		attr_accessor :abort_on_exception
+	end
+
+private
+	def timeout_for(task, timeout)
 		unless @timeout
 			spawn_timeout_thread
 		end
@@ -332,25 +359,6 @@ class Thread::Pool
 		}
 	end
 
-	# Shutdown the pool after a given amount of time.
-	def shutdown_after (timeout)
-		Thread.new {
-			sleep timeout
-
-			shutdown
-		}
-
-		self
-	end
-
-	class << self
-		# If true, tasks will allow raised exceptions to pass through.
-		#
-		# Similar to Thread.abort_on_exception
-		attr_accessor :abort_on_exception
-	end
-
-private
 	def wake_up_timeout
 		if defined? @pipes
 			@pipes.last.write_nonblock 'x' rescue nil
@@ -394,7 +402,7 @@ private
 					@todo.shift
 				} or break
 
-				task.execute(thread)
+				task.execute
 
 				break if @shutdown == :now
 
@@ -464,7 +472,7 @@ end
 
 class Thread
 	# Helper to create a pool.
-	def self.pool (*args, &block)
+	def self.pool(*args, &block)
 		Thread::Pool.new(*args, &block)
 	end
 end
