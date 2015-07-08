@@ -9,6 +9,7 @@
 #++
 
 require 'thread'
+require 'weakref'
 
 # A future is an object that incapsulates a block which is called in a
 # different thread, upon retrieval the caller gets blocked until the block has
@@ -34,13 +35,15 @@ class Thread::Future
 
 		@thread = pool ? pool.process(&task) : Thread.new(&task)
 
-		ObjectSpace.define_finalizer self, self.class.finalizer(@thread)
+		ObjectSpace.define_finalizer self, self.class.finalizer(WeakRef.new(@thread))
 	end
 
 	# @private
 	def self.finalizer(thread)
 		proc {
-			thread.raise Cancel.new
+			if thread.weakref_alive?
+				thread.raise Cancel.new
+			end
 		}
 	end
 
