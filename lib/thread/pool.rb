@@ -83,7 +83,7 @@ class Thread::Pool
 
 		# Raise an exception in the thread used by the task.
 		def raise(exception)
-			@thread.raise(exception)
+			@thread.raise(exception) if @thread
 		end
 
 		# Terminate the exception with an optionally given exception.
