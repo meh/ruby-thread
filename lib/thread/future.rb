@@ -42,7 +42,11 @@ class Thread::Future
 	def self.finalizer(thread)
 		proc {
 			if thread.weakref_alive?
-				thread.raise Cancel.new
+				if thread.is_a? Thread
+					thread.raise Cancel
+				else
+					thread.terminate! Cancel
+				end
 			end
 		}
 	end
@@ -75,7 +79,11 @@ class Thread::Future
 		return self if delivered?
 
 		@mutex.synchronize {
-			@thread.raise Cancel.new('future cancelled')
+			if @thread.is_a? Thread
+				@thread.raise Cancel
+			else
+				@thread.terminate! Cancel
+			end
 		}
 
 		self
