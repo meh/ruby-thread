@@ -84,6 +84,8 @@ class Thread::Future
 			else
 				@thread.terminate! Cancel
 			end
+
+			@exception = Cancel.new
 		}
 
 		self
