@@ -84,11 +84,13 @@ class Thread::Channel
 	#
 	# If a block is passed, it's used as guard to match to a message.
 	def receive!(&block)
-		if block
-			@messages.delete_at(@messages.find_index(&block))
-		else
-			@messages.shift
-		end
+		@mutex.synchronize {
+			if block
+				@messages.delete_at(@messages.find_index(&block))
+			else
+				@messages.shift
+			end
+		}
 	end
 
 private
