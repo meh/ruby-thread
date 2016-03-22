@@ -142,6 +142,7 @@ class Thread::Pool
 		@trim_requests = 0
 		@auto_trim     = false
 		@idle_trim     = nil
+		@timeout       = nil
 
 		@mutex.synchronize {
 			min.times {
