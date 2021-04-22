@@ -143,7 +143,7 @@ private
 		@cond ||= ConditionVariable.new
 	end
 
-	def deliver (value)
+	def deliver(value)
 		return if delivered?
 
 		@mutex.synchronize {
